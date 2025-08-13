@@ -2,15 +2,17 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
+import authRoutes from "./routes/auth.js";
 
 dotenv.config();
-console.log("MONGO_URI:", process.env.MONGO_URI);
 
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+app.use("/api/auth", authRoutes);
 
 // Contoh route dasar
 app.get("/", (req, res) => {
