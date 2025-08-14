@@ -53,7 +53,7 @@ cd server
 npm install
 
 # Frontend
-cd ../client
+cd client
 npm install
 ```
 
@@ -90,11 +90,9 @@ npm start
 ```
 server/
  ├─ controllers/
- │   └─ authController.js
+ ├─ middlewares/
  ├─ models/
- │   └─ User.js
  ├─ routes/
- │   └─ auth.js
  ├─ index.js
  └─ .env
 
@@ -165,7 +163,6 @@ client/
 
 > Note: Untuk create/update/delete product, login sebagai admin dan sertakan token di Authorization: Bearer <jwt>
 
-> Catatan: update endpoint lain (products, cart, orders, admin) sambil coding
 
 ---
 
