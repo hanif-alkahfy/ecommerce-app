@@ -1,31 +1,42 @@
+// middleware/auth.js
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-dotenv.config();
+import User from "../models/user.js";
 
-// Middleware untuk cek token & user login
-export const verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+// Middleware untuk verifikasi token
+export const protect = async (req, res, next) => {
+  let token;
 
-  if (!authHeader)
-    return res.status(401).json({ message: "No token provided" });
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    try {
+      token = req.headers.authorization.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-  const token = authHeader.split(" ")[1]; // Bearer <token>
+      req.user = await User.findById(decoded.id).select("-password");
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // Simpan data user di req.user
-    next();
-  } catch (err) {
-    return res.status(403).json({ message: "Invalid token" });
+      if (!req.user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      next();
+    } catch (error) {
+      console.error(error);
+      return res.status(401).json({ message: "Not authorized, token failed" });
+    }
+  }
+
+  if (!token) {
+    return res.status(401).json({ message: "Not authorized, no token" });
   }
 };
 
-// Middleware untuk cek role user (admin / user)
-export const verifyAdmin = (req, res, next) => {
-  verifyToken(req, res, () => {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ message: "Admin access only" });
-    }
+// Middleware untuk cek role admin
+export const admin = (req, res, next) => {
+  if (req.user && req.user.role === "admin") {
     next();
-  });
+  } else {
+    res.status(403).json({ message: "Admin access only" });
+  }
 };
