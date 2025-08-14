@@ -118,6 +118,17 @@ client/
 | POST   | /api/auth/register | Register user | { "name", "email", "password" } |
 | POST   | /api/auth/login    | Login user    | { "email", "password" }         |
 
+### Products
+
+| Method | Route              | Description                | Body                                                                                           | Auth  |
+| ------ | ------------------ | -------------------------- | ---------------------------------------------------------------------------------------------- | ----- |
+| POST   | /api/products      | Create product (admin only) | { "name": "Keyboard", "description": "desc", "price": 750000, "category": "Electronics", "stock": 20 } | Admin |
+| GET    | /api/products      | Get all products           | -                                                                                              | Public|
+| GET    | /api/products/:id  | Get product detail         | -                                                                                              | Public|
+| PUT    | /api/products/:id  | Update product (admin only) | { "name": "New name", "price": 800000 }                                                        | Admin |
+| DELETE | /api/products/:id  | Delete product (admin only) | -                                                                                              | Admin |
+
+
 *Response success (login/register):*
 
 ```json
@@ -132,6 +143,28 @@ client/
   "token": "jwt_token_here"
 }
 ```
+
+*Response success (create product):*
+
+```json
+{
+  "message": "Product created successfully",
+  "product": {
+    "_id": "689ddd9291afc4cf4cbfaa63",
+    "name": "Keyboard Mechanical",
+    "description": "Keyboard mechanical RGB blue switch",
+    "price": 750000,
+    "category": "Electronics",
+    "stock": 20,
+    "images": [],
+    "createdBy": "689ddca291afc4cf4cbfaa5e",
+    "createdAt": "2025-08-14T12:58:58.516Z",
+    "updatedAt": "2025-08-14T12:58:58.516Z"
+  }
+}
+```
+
+> Note: Untuk create/update/delete product, login sebagai admin dan sertakan token di Authorization: Bearer <jwt>
 
 > Catatan: update endpoint lain (products, cart, orders, admin) sambil coding
 
