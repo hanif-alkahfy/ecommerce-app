@@ -118,17 +118,6 @@ client/
 | POST   | /api/auth/register | Register user | { "name", "email", "password" } |
 | POST   | /api/auth/login    | Login user    | { "email", "password" }         |
 
-### Products
-
-| Method | Route              | Description                | Body                                                                                           | Auth  |
-| ------ | ------------------ | -------------------------- | ---------------------------------------------------------------------------------------------- | ----- |
-| POST   | /api/products      | Create product (admin only) | { "name": "Keyboard", "description": "desc", "price": 750000, "category": "Electronics", "stock": 20 } | Admin |
-| GET    | /api/products      | Get all products           | -                                                                                              | Public|
-| GET    | /api/products/:id  | Get product detail         | -                                                                                              | Public|
-| PUT    | /api/products/:id  | Update product (admin only) | { "name": "New name", "price": 800000 }                                                        | Admin |
-| DELETE | /api/products/:id  | Delete product (admin only) | -                                                                                              | Admin |
-
-
 *Response success (login/register):*
 
 ```json
@@ -143,6 +132,16 @@ client/
   "token": "jwt_token_here"
 }
 ```
+
+### Products
+
+| Method | Route              | Description                | Body                                                                                           | Auth  |
+| ------ | ------------------ | -------------------------- | ---------------------------------------------------------------------------------------------- | ----- |
+| POST   | /api/products      | Create product (admin only) | { "name": "Keyboard", "description": "desc", "price": 750000, "category": "Electronics", "stock": 20 } | Admin |
+| GET    | /api/products      | Get all products           | -                                                                                              | Public|
+| GET    | /api/products/:id  | Get product detail         | -                                                                                              | Public|
+| PUT    | /api/products/:id  | Update product (admin only) | { "name": "New name", "price": 800000 }                                                        | Admin |
+| DELETE | /api/products/:id  | Delete product (admin only) | -                                                                                              | Admin |
 
 *Response success (create product):*
 
