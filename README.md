@@ -161,7 +161,7 @@ client/
     "updatedAt": "2025-08-14T12:58:58.516Z"
   }
 }
-
+```
 
 > Note: Untuk create/update/delete product, login sebagai admin dan sertakan token di Authorization: Bearer <jwt>
 
