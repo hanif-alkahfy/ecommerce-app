@@ -21,15 +21,29 @@ const productSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    brand: {
+      type: String,
+      trim: true,
+    },
+    rating: {
+      type: Number,
+      default: 0,
+    },
+    numReviews: {
+      type: Number,
+      default: 0,
+    },
     stock: {
       type: Number,
       default: 0,
     },
-    images: [
-      {
-        type: String, // URL gambar
+    images: {
+      type: [String],
+      validate: {
+        validator: (arr) => arr.length > 0,
+        message: "At least one image is required",
       },
-    ],
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

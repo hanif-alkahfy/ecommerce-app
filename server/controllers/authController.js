@@ -1,4 +1,5 @@
 import User from "../models/user.js";
+import { sendEmail } from "../utils/sendEmail.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
@@ -8,59 +9,63 @@ export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // cek email sudah terdaftar
+    // 1. Cek email sudah ada atau belum
     const existingUser = await User.findOne({ email });
     if (existingUser)
       return res.status(400).json({ message: "Email sudah terdaftar" });
 
-    // buat user baru
+    // 2. Buat user baru
     const newUser = new User({ name, email, password });
     await newUser.save();
 
-    // generate token
-    const token = jwt.sign(
-      { id: newUser._id, role: newUser.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+    // 3. Generate email verification token (JWT)
+    const emailToken = jwt.sign(
+      { userId: newUser._id },
+      process.env.EMAIL_SECRET,
+      { expiresIn: "24h" } // token expire 24 jam
     );
 
+    // 4. Buat link verifikasi (belum dikirim email)
+    const verifyLink = `${process.env.CLIENT_URL}/verify-email?token=${emailToken}`;
+
+    // di register, setelah generate verifyLink
+    await sendEmail(
+      email,
+      "Verify your email",
+      `<p>Click <a href="${verifyLink}">here</a> to verify your email.</p>`
+    );
+
+    // 5. Response
     res.status(201).json({
-      message: "Register berhasil",
+      message: "Register berhasil, silakan verifikasi email Anda",
       user: { id: newUser._id, name, email, role: newUser.role },
-      token,
+      verifyLink // ini sementara untuk testing, nanti diganti kirim email
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-export const login = async (req, res) => {
+// Endpoint verifikasi email
+export const verifyEmail = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { token } = req.query;
+    if (!token) return res.status(400).send("Token tidak ditemukan");
 
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "User tidak ditemukan" });
+    const decoded = jwt.verify(token, process.env.EMAIL_SECRET);
+    const user = await User.findById(decoded.userId);
+    if (!user) return res.status(404).send("User tidak ditemukan");
 
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) return res.status(400).json({ message: "Password salah" });
+    if (user.emailVerified) return res.send("Email sudah diverifikasi sebelumnya");
 
-    if (user.isBlocked)
-      return res.status(403).json({ message: "User diblokir oleh admin" });
+    user.emailVerified = true;
+    await user.save();
 
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    res.status(200).json({
-      message: "Login berhasil",
-      user: { id: user._id, name: user.name, email: user.email, role: user.role },
-      token,
-    });
+    res.send("Email berhasil diverifikasi. Silakan login.");
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.status(400).send("Token tidak valid atau sudah kadaluwarsa");
   }
 };

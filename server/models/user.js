@@ -8,6 +8,19 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     role: { type: String, enum: ["user", "admin"], default: "user" },
     isBlocked: { type: Boolean, default: false },
+    emailVerified: { type: Boolean, default: false }, // untuk email verification
+    refreshToken: { type: String, default: null }, // untuk menyimpan refresh token aktif
+    profileImage: { type: String, default: null }, // URL foto profil
+    lastLogin: { type: Date, default: null },
+    addresses: [
+      {
+        label: { type: String, default: "" }, // contoh: "Rumah", "Kantor"
+        address: { type: String, default: "" },
+        city: { type: String, default: "" },
+        postalCode: { type: String, default: "" },
+        phone: { type: String, default: "" },
+      },
+    ], // ditambahkan nanti melalui update profile
   },
   { timestamps: true }
 );

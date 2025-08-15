@@ -3,8 +3,27 @@ import Product from "../models/product.js";
 // @desc    Get all products
 export const getProducts = async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
-    res.json(products);
+    let { category, search, page = 1, limit = 10 } = req.query;
+    page = Number(page);
+    limit = Number(limit);
+
+    const filter = {};
+    if (category) filter.category = category;
+    if (search) filter.name = { $regex: search, $options: "i" };
+
+    const products = await Product.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    const total = await Product.countDocuments(filter);
+
+    res.json({
+      products,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
@@ -17,6 +36,9 @@ export const getProductById = async (req, res) => {
     if (!product) return res.status(404).json({ message: "Product not found" });
     res.json(product);
   } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({ message: "Invalid product ID" });
+    }
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -24,16 +46,11 @@ export const getProductById = async (req, res) => {
 // @desc    Create product
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, price, category, stock, images } = req.body;
     const product = new Product({
-      name,
-      description,
-      price,
-      category,
-      stock,
-      images,
-      createdBy: req.user.id,
+      ...req.body,
+      createdBy: req.user?.id || null,
     });
+
     const savedProduct = await product.save();
     res.status(201).json(savedProduct);
   } catch (error) {
@@ -49,10 +66,15 @@ export const updateProduct = async (req, res) => {
       req.body,
       { new: true }
     );
+
     if (!updatedProduct)
       return res.status(404).json({ message: "Product not found" });
+
     res.json(updatedProduct);
   } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({ message: "Invalid product ID" });
+    }
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -65,6 +87,9 @@ export const deleteProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     res.json({ message: "Product deleted" });
   } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({ message: "Invalid product ID" });
+    }
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
